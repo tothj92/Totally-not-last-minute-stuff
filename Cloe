@@ -1,5 +1,52 @@
-;Insert work here
+(ns cloe-v1.core)
 
-(defn cloe []
+(import '(javax.swing JFrame JLabel JPanel BoxLayout)
+        '(java.awt Graphics2D Graphics Color Dimension)
+        '(clojure.string))
+;(import javax.imageio.ImageIO)
+;(import image BufferedImage)
+(import java.awt.Image Image)
+(import java.awt.event ActionListener)
+(import java.io.File)
 
-)
+(defn foo
+  "I don't do a whole lot."
+  [x]
+  (println x "Hello, World!"))
+
+;Loop Working
+(defn test []
+  (loop [i 1]
+    (println i)
+    (if (< i 10)
+      (recur (+ i 1)))))
+
+(test)
+
+;Variable defined 
+(def value 4) 
+(println value)
+
+;Program Start
+;Everything above is reference code
+(def tutorialString (slurp "test.txt"))
+(println tutorialString)
+(def tutorialList (clojure.string/split-lines tutorialString));don't know how to use this
+
+
+;Building GUI
+(let [frame (new JFrame "Title")
+      panel (new JPanel)
+      label (new JLabel)]
+  (doto panel 
+   (.add label)
+   (.setSize 500 500)
+   (paintComponent [g]
+     (proxy-super paintComponent g)
+     (. g drawImage canvas nil nil)))
+                   
+  (doto frame
+   (.add panel)
+   (.setSize 500 500)
+   (.setVisible true)))
+      
