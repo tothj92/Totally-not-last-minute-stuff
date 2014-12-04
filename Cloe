@@ -1,52 +1,136 @@
 (ns cloe-v1.core)
 
-(import '(javax.swing JFrame JLabel JPanel BoxLayout)
-        '(java.awt Graphics2D Graphics Color Dimension)
+(import '(javax.swing JFrame JLabel JPanel JButton JTextField JTextArea ImageIcon BoxLayout)
+        '(java.awt Graphics2D Graphics Font Color Dimension BorderLayout GridLayout)
         '(clojure.string))
-;(import javax.imageio.ImageIO)
-;(import image BufferedImage)
-(import java.awt.Image Image)
-(import java.awt.event ActionListener)
+(import javax.imageio.ImageIO)
+(import java.awt.image.BufferedImage)
+(import java.awt.event.ActionListener)
 (import java.io.File)
+(import java.io.FileInputStream)
+;Examples Start
+;
+;
 
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
-
-;Loop Working
-(defn test []
+;Control Flow
+(let [size 10]
   (loop [i 1]
-    (println i)
-    (if (< i 10)
-      (recur (+ i 1)))))
+    (println(* i i))
+    (if (< i size)
+      (recur (inc i)))))
+;
+;
 
-(test)
+;Sub Programs
+(defn insertBag [x]
+  (println x " Inserted into bag"))
 
-;Variable defined 
-(def value 4) 
-(println value)
+(defn nextItem [items size]
+  (loop [i 0]
+    (insertBag (nth items i))
+    (if (< i size)
+      (recur (inc i)))))
+
+(nextItem (list 1 "two" false "four" 5) 4)
+;
+;
+
+;Binding and scoping example
+(def a 1)
+(println a) ;Prints 1
+
+(let [a "a string"]
+   (println a)) ;Prints "a string"
+
+(println a) ;Prints 1
+;
+;
+
+
 
 ;Program Start
-;Everything above is reference code
-(def tutorialString (slurp "test.txt"))
-(println tutorialString)
-(def tutorialList (clojure.string/split-lines tutorialString));don't know how to use this
+;
+;
+(def tempString (slurp "tutorial.txt"))
+(def textAndFiles (clojure.string/split-lines tempString))
 
+(def cloeHype true)
+(def lineNumber 0)
+
+;Images
+(def background (ImageIO/read (FileInputStream. (File. "proper.png"))))
+(def foreground (ImageIO/read (FileInputStream. (File. "worstpony.png"))))
+(def other (ImageIO/read (FileInputStream. (File. "empty.png"))))
 
 ;Building GUI
-(let [frame (new JFrame "Title")
-      panel (new JPanel)
-      label (new JLabel)]
-  (doto panel 
-   (.add label)
-   (.setSize 500 500)
+(def frame (new JFrame "Title"))
+(def butPnl (new JPanel))
+(def imgPnl (proxy [JPanel] [] ;Edit to handle 3 images
    (paintComponent [g]
      (proxy-super paintComponent g)
-     (. g drawImage canvas nil nil)))
-                   
-  (doto frame
-   (.add panel)
-   (.setSize 500 500)
-   (.setVisible true)))
-      
+     (.drawImage g background 0 0 nil)
+     (.drawImage g foreground 0 0 nil))))
+(def txtPnl (new JPanel))
+(def textArea (new JTextArea "Default" 5 58))
+(def button (new JButton "Next"))
+(def button2 (new JButton "Clojure"))
+(def button3 (new JButton "Java"))
+
+;Edit to update 3 images
+(defn nextSlide [x]
+ (doto textArea
+   (.setText (nth textAndFiles x)))
+ (def foreground
+   (ImageIO/read (FileInputStream. (File. (nth textAndFiles (+ x 1))))))
+ (doto imgPnl
+   (.repaint)))
+
+(doto textArea
+  (.setLineWrap true)
+  (.setWrapStyleWord true)
+  (.setFont (new Font "Veranda" Font/BOLD 14)))
+
+(doto button
+  (.addActionListener
+    (proxy [ActionListener][]
+      (actionPerformed [evt]
+        (nextSlide lineNumber)
+        (def lineNumber (+ lineNumber 3)))))) ;Edit to handle 3 images
+
+(doto button2
+  (.addActionListener
+    (proxy [ActionListener][]
+      (actionPerformed [evt]
+        (doto textArea
+          (.setText "You have chosen Clojure"))
+        (def cloeHype true)))))
+
+(doto button3
+  (.addActionListener
+    (proxy [ActionListener][]
+      (actionPerformed [evt]
+        (doto textArea
+          (.setText "You have chosen Java"))
+        (def cloeHype false)))))
+
+(doto butPnl
+  (.setLayout (new GridLayout 3 1))
+  (.add button)
+  (.add button2)
+  (.add button3))
+
+
+(doto txtPnl
+  (.setLayout (new BorderLayout))
+  (.add textArea BorderLayout/WEST)
+  (.add butPnl BorderLayout/EAST))
+
+(doto frame
+ (.setLayout (new BorderLayout ))
+ (.add imgPnl BorderLayout/CENTER)
+ (.add txtPnl BorderLayout/SOUTH)
+ (.setTitle "OPL Academy")
+ (.setSize 800 800)
+ (.setVisible true))
+
+(nextSlide lineNumber)
